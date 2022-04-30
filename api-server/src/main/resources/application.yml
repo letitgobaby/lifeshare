@@ -1,0 +1,29 @@
+server:
+  port: 8090    # 기본 포트 설정
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+
+---
+server:
+    port: 9000
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+
+---
+server:
+    port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+      
