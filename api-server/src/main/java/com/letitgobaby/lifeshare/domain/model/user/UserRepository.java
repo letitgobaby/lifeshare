@@ -1,19 +1,7 @@
 package com.letitgobaby.lifeshare.domain.model.user;
 
-public interface UserRepository {
-  
-  User findById(Long id);
+import com.letitgobaby.lifeshare.system.persistence.BaseQueryDSLSupport;
 
-  User findByNickName(String nickName);
+import org.springframework.data.jpa.repository.JpaRepository;
 
-  User findByUserName(String userName);
-
-  User findByEmail(String email);
-
-  void regist(User user);
-
-  // void update(User user);
-
-  // void withdraw(User user);
-
-}
+public interface UserRepository extends JpaRepository<User, Long>, BaseQueryDSLSupport<User> { }

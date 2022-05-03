@@ -17,8 +17,8 @@ import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "user")
-@Where(clause = "isDeleted = false")
-@SQLDelete(sql = "UPDATE user SET isDeleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+@SQLDelete(sql = "UPDATE user SET is_deleted = true WHERE id = ?")
 public class User extends DateBaseEntity implements Serializable {
 
   private static final long serialVersionUID = -1153931912966528994L;
@@ -52,6 +52,7 @@ public class User extends DateBaseEntity implements Serializable {
   @Column(name = "is_deleted", nullable = false)
   private Boolean isDeleted = Boolean.FALSE;
 
+
   public User regist(String userName, String nickName, String password, String phoneNumber, String email) {
     User user = new User();
     user.userName = userName;
@@ -63,6 +64,7 @@ public class User extends DateBaseEntity implements Serializable {
     return user;
   }
 
+  
   private String encodePassword(String password) {
     return password;
   }
@@ -71,7 +73,7 @@ public class User extends DateBaseEntity implements Serializable {
 
   public String getUserName() { return this.userName; }
 
-  // public String getPassword() { return this.password; }
+  public String getNickName() { return this.nickName; }
 
   public String getPhoneNumber() { return this.phoneNumber; }
 
