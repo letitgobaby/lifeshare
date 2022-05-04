@@ -18,4 +18,10 @@ public class UserQueryDslRepositoryImpl implements BaseQueryDSLSupport<User> {
     return this.queryFactory.selectFrom(QUser.user).fetch();
   }
 
+  public User findByUserName(String userName) {
+    return this.queryFactory.selectFrom(QUser.user)
+      .where(QUser.user.userName.eq(userName))
+      .fetchOne();
+  }
+
 }

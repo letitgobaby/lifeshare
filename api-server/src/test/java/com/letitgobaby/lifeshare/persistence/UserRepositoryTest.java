@@ -9,20 +9,34 @@ import java.util.List;
 import com.letitgobaby.lifeshare.domain.model.user.User;
 import com.letitgobaby.lifeshare.domain.model.user.UserRepository;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+// @SpringBootTest
 public class UserRepositoryTest {
 
-  @Mock
-  UserRepository userRepository;
+  // @Mock
+  private UserRepository userRepository;
 
-  // @BeforeAll
-  // public void setUp() throws Exception {
-  //   // userRepository = new UserQueryDslRepositoryImpl()
-  // }
+  @BeforeAll
+  public void setUp() throws Exception {
+    userRepository = mock(UserRepository.class);
+  }
+
+  @Test
+  public void regist_user() {
+		String userName = "test";
+		String nickName = "nick";
+		String passwd = "password";
+		String phone = "010-1234-5678";
+		String email = "test@test.com";
+
+    when(userRepository.findByUserName(userName)).thenReturn(new User());
+    
+  }
   
 	@Test
 	public void user_저장_확인() {
@@ -32,13 +46,14 @@ public class UserRepositoryTest {
 		String phone = "010-1234-5678";
 		String email = "test@test.com";
 		User newUser = new User().regist(userName, nickName, passwd, phone, email);
-		this.userRepository.save(newUser);
+		
+    when(userRepository.save(Mockito.any(User.class))).thenReturn(newUser);
 
-		List<User> result = this.userRepository.findAll();
+    User savedUser = this.userRepository.save(newUser);
 
-		assertEquals(result.get(0).getUserName(), userName);
-		assertEquals(result.get(0).getPhoneNumber(), phone);
-		assertEquals(result.get(0).getEmail(), email);
+		assertEquals(savedUser.getUserName(), userName);
+		assertEquals(savedUser.getPhoneNumber(), phone);
+		assertEquals(savedUser.getEmail(), email);
 	}
 
 }
