@@ -1,19 +1,19 @@
 package com.letitgobaby.lifeshare.system.persistence;
 
-import javax.persistence.EntityManager;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
-public abstract class HibernateQueryDSLSupport<T> {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public abstract class HibernateQueryDSLSupport<T> implements JpaRepository<T, Long> {
   
-  private EntityManager entityManager;
+  private final JPAQueryFactory queryFactory;
 
-  public HibernateQueryDSLSupport(EntityManager entityManager) {
-    this.entityManager = entityManager;
+  public HibernateQueryDSLSupport(JPAQueryFactory queryFactory) {
+    this.queryFactory = queryFactory;
   }
 
-  public T save(T object) {
-    entityManager.persist(object);
-    entityManager.flush();
-    return object;
+  public JPAQueryFactory query() {
+    return this.queryFactory;
   }
 
 }

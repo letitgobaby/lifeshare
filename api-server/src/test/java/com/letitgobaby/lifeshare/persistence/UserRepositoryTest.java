@@ -35,7 +35,7 @@ public class UserRepositoryTest {
 		User newUser = new User().regist(userName, nickName, passwd, phone, email);
 
     when(userRepository.findByUserName(userName)).thenReturn(newUser);
-    
+
 		// when
 		User user = userRepository.findByUserName(userName);
 
