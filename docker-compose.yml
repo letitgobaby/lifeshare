@@ -1,0 +1,20 @@
+version: "3"
+
+services: 
+  db:
+    build: "./database"
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=LIFE_SHARE
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_HOST=localhost
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+      - TZ=Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - D:/docker/mysql/data:/var/lib/mysql
