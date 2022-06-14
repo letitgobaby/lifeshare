@@ -5,6 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,18 +22,23 @@ import org.springframework.web.filter.CorsFilter;
 
 import com.letitgobaby.auth.security.JwtAuthenticationFilter;
 import com.letitgobaby.auth.security.LoginAuthenticationFilter;
+import com.letitgobaby.auth.security.LoginAuthenticationProvider;
+import com.letitgobaby.auth.security.LoginFailureHandler;
+import com.letitgobaby.auth.security.LoginSuccessHandler;
 
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class WebSecurityConfig {
 
   private JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Bean
   protected SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+
     http.httpBasic().disable();
     http.cors(); // corsFilter 이름의 빈 등록이 되면 자동 적용
     http.csrf().disable();
@@ -41,7 +49,7 @@ public class SecurityConfig {
         sseion.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
       })
       .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-      .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
+      .addFilterAt(loginFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
       .requestMatchers(matchers -> {
         matchers.antMatchers("/static/**");
       })
@@ -60,10 +68,22 @@ public class SecurityConfig {
   }
 
   @Bean
-  private Filter loginFilter() {
+  public Filter loginFilter(AuthenticationManager authManager) {
     RequestMatcher login_requestMatcher = new AntPathRequestMatcher("/login", "POST");
-    return new LoginAuthenticationFilter(login_requestMatcher);
+    LoginAuthenticationFilter loginFilter = new LoginAuthenticationFilter(login_requestMatcher);
+    loginFilter.setAuthenticationManager(authManager);
+    loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
+    loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler());
+    
+    return loginFilter;
   }
+
+
+
+  // private AuthenticationProvider loginProvider() {
+  //   LoginAuthenticationProvider provider = new LoginAuthenticationProvider();
+  //   return provider;
+  // }
 
   @Bean
   public CorsFilter corsFilter() {
