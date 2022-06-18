@@ -1,6 +1,11 @@
 package com.letitgobaby.auth.apis;
 
+import java.security.Principal;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,12 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 public class AuthController {
 
-  @GetMapping("/login")
+  @PostMapping("/login")
   public ResponseEntity<Object> login() {
+    System.out.println("\n" + SecurityContextHolder.getContext().getAuthentication().getPrincipal() + "\n");
     return ResponseEntity.ok().build();
   }
 

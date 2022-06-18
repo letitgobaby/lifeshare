@@ -28,6 +28,7 @@ import com.letitgobaby.auth.security.LoginAuthenticationFilter;
 import com.letitgobaby.auth.security.LoginAuthenticationProvider;
 import com.letitgobaby.auth.security.LoginFailureHandler;
 import com.letitgobaby.auth.security.LoginSuccessHandler;
+import com.letitgobaby.auth.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +36,10 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
+
+  private final String[] PERMIT_URL = new String[] { "/login" };
+
+  private final UserService userService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -54,7 +59,9 @@ public class WebSecurityConfig {
         matchers.antMatchers("/static/**");
       })
       .authorizeHttpRequests(authorize -> {
-        authorize.anyRequest().permitAll();
+        authorize
+          .antMatchers(PERMIT_URL).permitAll()
+          .anyRequest().authenticated();
       })
       .exceptionHandling()
       .authenticationEntryPoint((request, response, ex) -> {
@@ -76,16 +83,17 @@ public class WebSecurityConfig {
   public Filter loginFilter() {
     RequestMatcher login_requestMatcher = new AntPathRequestMatcher("/login", "POST");
     LoginAuthenticationFilter loginFilter = new LoginAuthenticationFilter(login_requestMatcher);
-    loginFilter.setAuthenticationManager(loginProvider());
-    loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
+    loginFilter.setAuthenticationManager(loginAuthManager());
+    // loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
     loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler());
     
     return loginFilter;
   }
 
   @Bean
-  public AuthenticationManager loginProvider() {
-    return new ProviderManager(Arrays.asList(new LoginAuthenticationProvider(bCryptPasswordEncoder())));
+  public AuthenticationManager loginAuthManager() {
+    AuthenticationProvider loginProvider = new LoginAuthenticationProvider(bCryptPasswordEncoder(), this.userService);
+    return new ProviderManager(Arrays.asList(loginProvider));
   }
 
   @Bean

@@ -7,7 +7,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.letitgobaby.auth.security.token.LoginAuthenticationToken;
+import com.letitgobaby.auth.entity.UserMock;
+import com.letitgobaby.auth.security.authentication.LoginAuthenticationToken;
+import com.letitgobaby.auth.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,19 +19,25 @@ import lombok.extern.slf4j.Slf4j;
 public class LoginAuthenticationProvider implements AuthenticationProvider {
 
   private final BCryptPasswordEncoder passwordEncoder;
+  private final UserService userService;
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    log.info("## LoginAuthenticationProvider ##");
     String userId = authentication.getPrincipal().toString();
     String userPw = authentication.getCredentials().toString();
 
-    log.info("## LoginAuthenticationProvider ## :: " + userId + " :: " + userPw + " / " + passwordEncoder.encode(userPw));
+    UserMock user = this.userService.loginByUserId(userId);
+    if (user == null) {
+      throw new BadCredentialsException("no userId");
+    }
 
-    if (!passwordEncoder.matches(userPw, passwordEncoder.encode(userPw))) {
+    String mockPasswd = passwordEncoder.encode(user.getPassword());
+    if (!passwordEncoder.matches(userPw, mockPasswd)) {
       throw new BadCredentialsException("Invalid password");
     }
 
-    return null;
+    return new LoginAuthenticationToken(user.getAccountId(),true);
   }
 
   @Override

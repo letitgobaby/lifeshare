@@ -20,7 +20,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
   public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException exception) throws IOException, ServletException {
   
-    log.info("-- LoginFailureHandler --");
+    log.info("-- LoginFailureHandler --  :: " + exception.getMessage());
 
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
