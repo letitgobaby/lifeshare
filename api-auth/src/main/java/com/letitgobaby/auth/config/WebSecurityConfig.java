@@ -1,5 +1,7 @@
 package com.letitgobaby.auth.config;
 
+import java.util.Arrays;
+
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServletResponse;
 
@@ -7,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,11 +36,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-  private JwtAuthenticationFilter jwtAuthenticationFilter;
-
   @Bean
-  protected SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
     http.httpBasic().disable();
     http.cors(); // corsFilter 이름의 빈 등록이 되면 자동 적용
@@ -48,8 +48,8 @@ public class WebSecurityConfig {
       .sessionManagement(sseion -> {
         sseion.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
       })
-      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-      .addFilterAt(loginFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+      .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
+      .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
       .requestMatchers(matchers -> {
         matchers.antMatchers("/static/**");
       })
@@ -68,22 +68,25 @@ public class WebSecurityConfig {
   }
 
   @Bean
-  public Filter loginFilter(AuthenticationManager authManager) {
+  public Filter jwtFilter() {
+    return new JwtAuthenticationFilter();
+  }
+
+  @Bean
+  public Filter loginFilter() {
     RequestMatcher login_requestMatcher = new AntPathRequestMatcher("/login", "POST");
     LoginAuthenticationFilter loginFilter = new LoginAuthenticationFilter(login_requestMatcher);
-    loginFilter.setAuthenticationManager(authManager);
+    loginFilter.setAuthenticationManager(loginProvider());
     loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
     loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler());
     
     return loginFilter;
   }
 
-
-
-  // private AuthenticationProvider loginProvider() {
-  //   LoginAuthenticationProvider provider = new LoginAuthenticationProvider();
-  //   return provider;
-  // }
+  @Bean
+  public AuthenticationManager loginProvider() {
+    return new ProviderManager(Arrays.asList(new LoginAuthenticationProvider(bCryptPasswordEncoder())));
+  }
 
   @Bean
   public CorsFilter corsFilter() {

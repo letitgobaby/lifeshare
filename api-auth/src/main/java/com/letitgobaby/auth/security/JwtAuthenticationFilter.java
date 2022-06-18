@@ -13,15 +13,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     
-    
-    log.info(" ##  JwtAuthenticationFilter ##");
+    log.info(" ##  JwtAuthenticationFilter ## :: " + request.getRequestURI().toString());
 
     filterChain.doFilter(request, response);
   }
