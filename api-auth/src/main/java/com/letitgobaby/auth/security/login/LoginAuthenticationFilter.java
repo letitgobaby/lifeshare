@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security;
+package com.letitgobaby.auth.security.login;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -50,24 +50,6 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     super.setAuthenticationManager(authenticationManager);
   }
 
-  @Override
-  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-      Authentication authResult) throws IOException, ServletException {
-    log.info(" ##  LoginAuthenticationFilter - successfulAuthentication ## ");
-    SecurityContextHolder.getContext().setAuthentication(authResult);
-    chain.doFilter(request, response);
-    
-    // LoginSuccessHandler.class 로 보내는 메서드 
-    // super.successfulAuthentication(request, response, chain, authResult);
-  }
-
-  @Override
-  protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException failed) throws IOException, ServletException {
-        log.info(" ##  LoginAuthenticationFilter - unsuccessfulAuthentication ## ");
-    super.unsuccessfulAuthentication(request, response, failed);
-  }
-  
   @Getter @Setter
   private static class LoginDto {
     String userId;

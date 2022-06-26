@@ -13,6 +13,12 @@ spring:
     password:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:test
+
+jwt:
+  header: Authorization
+  secret: 123
+  access-token-time: 900
+
 ---
 server:
     port: 9000

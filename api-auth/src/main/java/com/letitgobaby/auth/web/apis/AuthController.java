@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.apis;
+package com.letitgobaby.auth.web.apis;
 
 import java.security.Principal;
 

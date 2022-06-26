@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security;
+package com.letitgobaby.auth.security.login;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;

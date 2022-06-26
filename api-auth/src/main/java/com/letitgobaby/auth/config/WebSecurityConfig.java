@@ -23,11 +23,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import com.letitgobaby.auth.security.JwtAuthenticationFilter;
-import com.letitgobaby.auth.security.LoginAuthenticationFilter;
-import com.letitgobaby.auth.security.LoginAuthenticationProvider;
-import com.letitgobaby.auth.security.LoginFailureHandler;
-import com.letitgobaby.auth.security.LoginSuccessHandler;
+import com.letitgobaby.auth.security.jwt.JwtAuthenticationFilter;
+import com.letitgobaby.auth.security.login.LoginAuthenticationFilter;
+import com.letitgobaby.auth.security.login.LoginAuthenticationProvider;
+import com.letitgobaby.auth.security.login.LoginFailureHandler;
+import com.letitgobaby.auth.security.login.LoginSuccessHandler;
 import com.letitgobaby.auth.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -39,6 +39,7 @@ public class WebSecurityConfig {
 
   private final String[] PERMIT_URL = new String[] { "/login" };
 
+  private final JwtAuthenticationFilter jwtFilter;
   private final UserService userService;
 
   @Bean
@@ -69,23 +70,21 @@ public class WebSecurityConfig {
       });
 
     http
-      .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
+      .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
       .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
 
-  @Bean
-  public Filter jwtFilter() {
-    return new JwtAuthenticationFilter();
-  }
 
   @Bean
   public Filter loginFilter() {
-    RequestMatcher login_requestMatcher = new AntPathRequestMatcher("/login", "POST");
+    String LOGIN_URL = "/login";
+    String LOGIN_METHOD = "POST";
+    RequestMatcher login_requestMatcher = new AntPathRequestMatcher(LOGIN_URL, LOGIN_METHOD);
     LoginAuthenticationFilter loginFilter = new LoginAuthenticationFilter(login_requestMatcher);
     loginFilter.setAuthenticationManager(loginAuthManager());
-    // loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
+    loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
     loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler());
     
     return loginFilter;
