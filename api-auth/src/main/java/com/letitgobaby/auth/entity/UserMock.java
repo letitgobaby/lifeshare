@@ -8,7 +8,7 @@ import lombok.ToString;
 public class UserMock {
 
   private String accountId = "test";
-  private String password = "passwd"; 
+  private String password = "passwd";
   private String role = "ADMIN";
   
 }

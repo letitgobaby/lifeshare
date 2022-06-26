@@ -38,7 +38,8 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
       throws AuthenticationException, IOException, ServletException {
     log.info(" ##  LoginAuthenticationFilter ## ");
     
-    LoginDto dto = objectMapper.readValue(StreamUtils.copyToString(request.getInputStream(), Charset.forName("UTF-8")), LoginDto.class);
+    String requestBody = StreamUtils.copyToString(request.getInputStream(), Charset.forName("UTF-8"));
+    LoginDto dto = objectMapper.readValue(requestBody, LoginDto.class);
 
     LoginAuthenticationToken loginToken = new LoginAuthenticationToken(dto.getUserId(), dto.getUserPw());
     return super.getAuthenticationManager().authenticate(loginToken);
@@ -49,15 +50,10 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     super.setAuthenticationManager(authenticationManager);
   }
 
-  @Getter @Setter
-  private static class LoginDto {
-    String userId;
-    String userPw;
-  }
-
   @Override
   protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
       Authentication authResult) throws IOException, ServletException {
+    log.info(" ##  LoginAuthenticationFilter - successfulAuthentication ## ");
     SecurityContextHolder.getContext().setAuthentication(authResult);
     chain.doFilter(request, response);
     
@@ -72,4 +68,10 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     super.unsuccessfulAuthentication(request, response, failed);
   }
   
+  @Getter @Setter
+  private static class LoginDto {
+    String userId;
+    String userPw;
+  }
+
 }

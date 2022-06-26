@@ -8,6 +8,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.letitgobaby.auth.entity.UserMock;
+import com.letitgobaby.auth.enums.AuthErrorCode;
 import com.letitgobaby.auth.security.authentication.LoginAuthenticationToken;
 import com.letitgobaby.auth.service.UserService;
 
@@ -29,12 +30,12 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
 
     UserMock user = this.userService.loginByUserId(userId);
     if (user == null) {
-      throw new BadCredentialsException("no userId");
+      throw new BadCredentialsException(AuthErrorCode.USER_NOT_FOUND.getMessage());
     }
 
-    String mockPasswd = passwordEncoder.encode(user.getPassword());
-    if (!passwordEncoder.matches(userPw, mockPasswd)) {
-      throw new BadCredentialsException("Invalid password");
+    String mockEncodedPasswd = passwordEncoder.encode(user.getPassword());
+    if (!passwordEncoder.matches(userPw, mockEncodedPasswd)) {
+      throw new BadCredentialsException(AuthErrorCode.PASSWORD_NOT_MATCH.getMessage());
     }
 
     return new LoginAuthenticationToken(user.getAccountId(),true);

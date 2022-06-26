@@ -46,15 +46,12 @@ public class WebSecurityConfig {
 
     http.httpBasic().disable();
     http.cors(); // corsFilter 이름의 빈 등록이 되면 자동 적용
-    http.csrf().disable();
-    http.headers().frameOptions().disable();
+    http.csrf().disable(); // API서버이기 때문에 xss 공격 설정 필요없음
 
     http
       .sessionManagement(sseion -> {
         sseion.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
       })
-      .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
-      .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
       .requestMatchers(matchers -> {
         matchers.antMatchers("/static/**");
       })
@@ -70,6 +67,10 @@ public class WebSecurityConfig {
       .accessDeniedHandler((request, response, ex) -> {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
       });
+
+    http
+      .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
+      .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
