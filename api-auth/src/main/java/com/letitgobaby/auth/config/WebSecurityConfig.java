@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -24,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import com.letitgobaby.auth.security.jwt.JwtAuthenticationFilter;
+import com.letitgobaby.auth.security.jwt.JwtValidateProvider;
 import com.letitgobaby.auth.security.login.LoginAuthenticationFilter;
 import com.letitgobaby.auth.security.login.LoginAuthenticationProvider;
 import com.letitgobaby.auth.security.login.LoginFailureHandler;
@@ -39,6 +42,7 @@ public class WebSecurityConfig {
 
   private final String[] PERMIT_URL = new String[] { "/login" };
 
+  private final PasswordEncoder bCryptPasswordEncoder;
   private final JwtAuthenticationFilter jwtFilter;
   private final UserService userService;
 
@@ -62,11 +66,11 @@ public class WebSecurityConfig {
           .anyRequest().authenticated();
       })
       .exceptionHandling()
-      .authenticationEntryPoint((request, response, ex) -> {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getMessage());
+      .authenticationEntryPoint((req, res, ex) -> {
+        res.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getMessage());
       })
-      .accessDeniedHandler((request, response, ex) -> {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+      .accessDeniedHandler((req, res, ex) -> {
+        res.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
       });
 
     http
@@ -80,20 +84,32 @@ public class WebSecurityConfig {
   @Bean
   public Filter loginFilter() {
     String LOGIN_URL = "/login";
-    String LOGIN_METHOD = "POST";
-    RequestMatcher login_requestMatcher = new AntPathRequestMatcher(LOGIN_URL, LOGIN_METHOD);
+    RequestMatcher login_requestMatcher = new AntPathRequestMatcher(LOGIN_URL, HttpMethod.POST.name());
     LoginAuthenticationFilter loginFilter = new LoginAuthenticationFilter(login_requestMatcher);
     loginFilter.setAuthenticationManager(loginAuthManager());
     loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
     loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler());
-    
     return loginFilter;
   }
 
   @Bean
   public AuthenticationManager loginAuthManager() {
-    AuthenticationProvider loginProvider = new LoginAuthenticationProvider(bCryptPasswordEncoder(), this.userService);
+    AuthenticationProvider loginProvider = new LoginAuthenticationProvider(this.bCryptPasswordEncoder, this.userService);
     return new ProviderManager(Arrays.asList(loginProvider));
+  }
+
+
+  @Bean
+  public Filter jwtFilter() {
+    JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter();
+    jwtFilter.setAuthenticationManager(jwtAuthManager());
+    return jwtFilter();
+  }
+
+  @Bean
+  public AuthenticationManager jwtAuthManager() {
+    AuthenticationProvider jwtProvider = new JwtValidateProvider();
+    return new ProviderManager(Arrays.asList(jwtProvider));
   }
 
   @Bean
@@ -106,11 +122,6 @@ public class WebSecurityConfig {
     config.addAllowedMethod("*");
     source.registerCorsConfiguration("/**", config);
     return new CorsFilter(source);
-  }
-
-  @Bean
-  public BCryptPasswordEncoder bCryptPasswordEncoder() {
-    return new BCryptPasswordEncoder();
   }
 
 }

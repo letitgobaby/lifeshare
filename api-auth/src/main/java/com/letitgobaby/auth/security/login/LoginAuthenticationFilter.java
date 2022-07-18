@@ -5,6 +5,8 @@ import java.nio.charset.Charset;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -18,6 +20,7 @@ import org.springframework.util.StreamUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letitgobaby.auth.security.authentication.LoginAuthenticationToken;
+import com.letitgobaby.auth.security.wrapper.RereadableRequestWrapper;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -46,9 +49,24 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
   }
 
   @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+      throws IOException, ServletException {
+    RereadableRequestWrapper wRequestWrapper = new RereadableRequestWrapper((HttpServletRequest) request);
+    super.doFilter(wRequestWrapper, response, chain);
+  }
+
+  @Override
+  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+      Authentication authResult) throws IOException, ServletException {
+    super.successfulAuthentication(request, response, chain, authResult);
+    chain.doFilter(request, response);
+  }
+
+  @Override
   public void setAuthenticationManager(AuthenticationManager authenticationManager) {
     super.setAuthenticationManager(authenticationManager);
   }
+
 
   @Getter @Setter
   private static class LoginDto {
