@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final JwtValidateProvider provider;
+  private AuthenticationManager authenticationManager;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -30,6 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // provider.authenticate(authentication);
 
     filterChain.doFilter(request, response);
+  }
+
+  public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+    this.authenticationManager = authenticationManager;
   }
 
 }
