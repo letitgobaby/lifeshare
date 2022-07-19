@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security.login;
+package com.letitgobaby.auth.security.filter;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -13,27 +13,27 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StreamUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letitgobaby.auth.security.authentication.LoginAuthenticationToken;
-import com.letitgobaby.auth.security.wrapper.RereadableRequestWrapper;
+import com.letitgobaby.auth.security.dto.LoginInfoDto;
+import com.letitgobaby.auth.security.dto.wrapper.RereadableRequestWrapper;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-  private final ObjectMapper objectMapper;
-
   public LoginAuthenticationFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
     super(requiresAuthenticationRequestMatcher);
-    this.objectMapper = new ObjectMapper();
+  }
+
+  @Override
+  public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+    super.setAuthenticationManager(authenticationManager);
   }
 
   @Override
@@ -42,7 +42,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     log.info(" ##  LoginAuthenticationFilter ## ");
     
     String requestBody = StreamUtils.copyToString(request.getInputStream(), Charset.forName("UTF-8"));
-    LoginDto dto = objectMapper.readValue(requestBody, LoginDto.class);
+    LoginInfoDto dto = new ObjectMapper().readValue(requestBody, LoginInfoDto.class);
 
     LoginAuthenticationToken loginToken = new LoginAuthenticationToken(dto.getUserId(), dto.getUserPw());
     return super.getAuthenticationManager().authenticate(loginToken);
@@ -60,18 +60,6 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
       Authentication authResult) throws IOException, ServletException {
     super.successfulAuthentication(request, response, chain, authResult);
     chain.doFilter(request, response);
-  }
-
-  @Override
-  public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-    super.setAuthenticationManager(authenticationManager);
-  }
-
-
-  @Getter @Setter
-  private static class LoginDto {
-    String userId;
-    String userPw;
   }
 
 }

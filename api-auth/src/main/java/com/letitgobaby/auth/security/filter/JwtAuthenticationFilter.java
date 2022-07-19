@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security.jwt;
+package com.letitgobaby.auth.security.filter;
 
 import java.io.IOException;
 
@@ -8,16 +8,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import lombok.RequiredArgsConstructor;
+import com.letitgobaby.auth.security.authentication.JwtAuthenticationToken;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private AuthenticationManager authenticationManager;
@@ -27,8 +26,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     log.info(" ##  JwtAuthenticationFilter ## :: " + request.getRequestURI().toString());
 
-
-    // provider.authenticate(authentication);
+    String authorization = request.getHeader("Authorization");
+    if (authorization != null && authorization.startsWith("Bearer ")) {
+      String accessToken = authorization.split(" ")[1];
+      JwtAuthenticationToken authToken = new JwtAuthenticationToken(accessToken);
+      
+      Authentication authentication = this.authenticationManager.authenticate(authToken);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
     filterChain.doFilter(request, response);
   }

@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security.jwt;
+package com.letitgobaby.auth.security.provider;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class JwtValidateProvider implements AuthenticationProvider {
 

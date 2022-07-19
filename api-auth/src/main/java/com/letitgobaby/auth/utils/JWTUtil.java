@@ -13,9 +13,9 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JWTUtil {
+public class JWTUtil<T> {
 
-  private String issuer = "letitgobaby";
+  private final String issuer = "letitgobaby";
   private Algorithm algorithm;
   private int defaultTime;
   
@@ -24,34 +24,29 @@ public class JWTUtil {
     this.defaultTime = miniute;
   }
 
-  public String generate(String info, int minute) throws JWTCreationException {
+  public String generate(T info, int minute) throws JWTCreationException {
     return JWT.create()
         .withIssuer(this.issuer)
-        .withClaim("userInfo", new ObjectMapper().convertValue(info, Map.class))
+        .withPayload(new ObjectMapper().convertValue(info, Map.class))
         .withExpiresAt(getExpireTime(minute))
         .sign(this.algorithm);
   }
 
-  public String verify(String token) {
+  public boolean verify(String token) throws JWTDecodeException, JWTVerificationException {
     try {
-      JWTVerifier verifier = JWT.require(this.algorithm)
-          .withIssuer(this.issuer)
-          .build();
+      JWT.require(this.algorithm)
+        .withIssuer(this.issuer)
+        .build()
+        .verify(token);
 
-      verifier.verify(token);
-      return "PASS";
-    } catch (JWTDecodeException e) {
-      return null;
-    } catch (JWTVerificationException ex) {
-      return "REFRESH";
+      return true;
     } catch (Exception e) {
-      return null;
+      return false;
     }
   }
 
-  public Claim getClaim(String token, String claimKey) {
-    DecodedJWT decodedJWT = JWT.decode(token);
-    return decodedJWT.getClaims().get(claimKey);
+  public String getPayload(String token) {
+    return JWT.decode(token).getPayload();
   }
 
   private Date getExpireTime(int timeProperty) {

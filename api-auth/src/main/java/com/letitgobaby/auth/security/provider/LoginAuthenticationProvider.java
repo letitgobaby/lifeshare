@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security.login;
+package com.letitgobaby.auth.security.provider;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,8 +20,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class LoginAuthenticationProvider implements AuthenticationProvider {
 
-  private final PasswordEncoder passwordEncoder;
-  private final UserService userService;
+  private PasswordEncoder passwordEncoder;
+  private UserService userService;
+
+  public void setEncoder(PasswordEncoder passwordEncoder) {
+    this.passwordEncoder = passwordEncoder;
+  }
+
+  public void setUserService(UserService userService) {
+    this.userService = userService;
+  }
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {

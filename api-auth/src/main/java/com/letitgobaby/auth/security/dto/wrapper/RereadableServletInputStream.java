@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security.wrapper;
+package com.letitgobaby.auth.security.dto.wrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

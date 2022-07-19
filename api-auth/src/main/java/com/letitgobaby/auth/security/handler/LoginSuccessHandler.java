@@ -1,4 +1,4 @@
-package com.letitgobaby.auth.security.login;
+package com.letitgobaby.auth.security.handler;
 
 import java.io.IOException;
 

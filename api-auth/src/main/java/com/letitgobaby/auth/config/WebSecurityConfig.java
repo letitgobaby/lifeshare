@@ -25,12 +25,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import com.letitgobaby.auth.security.jwt.JwtAuthenticationFilter;
-import com.letitgobaby.auth.security.jwt.JwtValidateProvider;
-import com.letitgobaby.auth.security.login.LoginAuthenticationFilter;
-import com.letitgobaby.auth.security.login.LoginAuthenticationProvider;
-import com.letitgobaby.auth.security.login.LoginFailureHandler;
-import com.letitgobaby.auth.security.login.LoginSuccessHandler;
+import com.letitgobaby.auth.security.filter.JwtAuthenticationFilter;
+import com.letitgobaby.auth.security.filter.LoginAuthenticationFilter;
+import com.letitgobaby.auth.security.handler.LoginFailureHandler;
+import com.letitgobaby.auth.security.handler.LoginSuccessHandler;
+import com.letitgobaby.auth.security.provider.JwtValidateProvider;
+import com.letitgobaby.auth.security.provider.LoginAuthenticationProvider;
 import com.letitgobaby.auth.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,6 @@ public class WebSecurityConfig {
   private final String[] PERMIT_URL = new String[] { "/login" };
 
   private final PasswordEncoder bCryptPasswordEncoder;
-  private final JwtAuthenticationFilter jwtFilter;
   private final UserService userService;
 
   @Bean
@@ -54,12 +53,8 @@ public class WebSecurityConfig {
     http.csrf().disable(); // API서버이기 때문에 xss 공격 설정 필요없음
 
     http
-      .sessionManagement(sseion -> {
-        sseion.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-      })
-      .requestMatchers(matchers -> {
-        matchers.antMatchers("/static/**");
-      })
+      .sessionManagement(sseion -> sseion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .requestMatchers(matchers -> matchers.antMatchers("/static/**"))
       .authorizeHttpRequests(authorize -> {
         authorize
           .antMatchers(PERMIT_URL).permitAll()
@@ -74,7 +69,7 @@ public class WebSecurityConfig {
       });
 
     http
-      .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+      .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
       .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
@@ -94,10 +89,11 @@ public class WebSecurityConfig {
 
   @Bean
   public AuthenticationManager loginAuthManager() {
-    AuthenticationProvider loginProvider = new LoginAuthenticationProvider(this.bCryptPasswordEncoder, this.userService);
-    return new ProviderManager(Arrays.asList(loginProvider));
+    LoginAuthenticationProvider provider = new LoginAuthenticationProvider();
+    provider.setEncoder(this.bCryptPasswordEncoder);
+    provider.setUserService(this.userService);
+    return new ProviderManager(Arrays.asList(provider));
   }
-
 
   @Bean
   public Filter jwtFilter() {
@@ -108,8 +104,8 @@ public class WebSecurityConfig {
 
   @Bean
   public AuthenticationManager jwtAuthManager() {
-    AuthenticationProvider jwtProvider = new JwtValidateProvider();
-    return new ProviderManager(Arrays.asList(jwtProvider));
+    JwtValidateProvider provider = new JwtValidateProvider();
+    return new ProviderManager(Arrays.asList(provider));
   }
 
   @Bean
